@@ -7,10 +7,22 @@ class Student:
         self.courses_in_progress = []
         self.grades = {}
 
+    def rate_lecture(self, lecturer, course, grade):
+        if isinstance(lecturer, Lecturer) and course in lecturer.courses_attached and course in self.courses_in_progress:
+            # Опционально: можно добавить проверку, что grade находится в диапазоне 1-10
+            if course in lecturer.grades:
+                lecturer.grades[course] += [grade]
+            else:
+                lecturer.grades[course] = [grade]
+            # Для избежания предупреждения "Missing return statement" в PyCharm,
+            # можно явно вернуть None, хотя это происходит и автоматически.
+            return None
+        else:
+            return 'Ошибка'
+
 
 class Mentor:
-    """Базовый класс преподавателей. Содержит только общие атрибуты."""
-
+    """Базовый класс преподавателей."""
     def __init__(self, name, surname):
         self.name = name
         self.surname = surname
@@ -18,15 +30,15 @@ class Mentor:
 
 
 class Lecturer(Mentor):
-    """Класс лекторов. Пока не имеет специфичных атрибутов или методов."""
-    pass
+    """Класс лекторов."""
+    def __init__(self, name, surname):
+        super().__init__(name, surname)
+        self.grades = {}
 
 
 class Reviewer(Mentor):
-    """Класс экспертов. Отвечает за проверку домашних заданий."""
-
+    """Класс экспертов."""
     def rate_hw(self, student, course, grade):
-        """Метод выставления оценки студенту перенесен из базового класса Mentor."""
         if isinstance(student, Student) and course in self.courses_attached and course in student.courses_in_progress:
             if course in student.grades:
                 student.grades[course] += [grade]
@@ -38,29 +50,22 @@ class Reviewer(Mentor):
 
 
 # =========================================
-# Исходный код тестирования (адаптированный)
+# Блок проверки из Задания №2
 # =========================================
-best_student = Student('Ruoy', 'Eman', 'your_gender')
-best_student.courses_in_progress += ['Python']
+if __name__ == '__main__':
+    # Переименовали переменные, чтобы они не затеняли аргументы методов
+    cool_lecturer = Lecturer('Иван', 'Иванов')
+    expert_reviewer = Reviewer('Пётр', 'Петров')
+    best_student = Student('Алёхина', 'Ольга', 'Ж')
 
-# Вместо Mentor теперь создается экземпляр Reviewer,
-# так как только он имеет право выставлять оценки
-cool_reviewer = Reviewer('Some', 'Buddy')
-cool_reviewer.courses_attached += ['Python']
+    best_student.courses_in_progress += ['Python', 'Java']
+    cool_lecturer.courses_attached += ['Python', 'C++']
+    expert_reviewer.courses_attached += ['Python', 'C++']
 
-cool_reviewer.rate_hw(best_student, 'Python', 10)
-cool_reviewer.rate_hw(best_student, 'Python', 10)
-cool_reviewer.rate_hw(best_student, 'Python', 10)
+    # Вызовы методов с новыми именами переменных
+    print(best_student.rate_lecture(cool_lecturer, 'Python', 7))  # Ожидаемый вывод: None
+    print(best_student.rate_lecture(cool_lecturer, 'Java', 8))    # Ожидаемый вывод: Ошибка
+    print(best_student.rate_lecture(cool_lecturer, 'C++', 8))     # Ожидаемый вывод: Ошибка
+    print(best_student.rate_lecture(expert_reviewer, 'Python', 6))  # Ожидаемый вывод: Ошибка
 
-print(f"Оценки студента {best_student.name}: {best_student.grades}")
-
-# =========================================
-# Блок проверки из Задания №1
-# =========================================
-lecturer = Lecturer('Иван', 'Иванов')
-reviewer = Reviewer('Пётр', 'Петров')
-
-print(isinstance(lecturer, Mentor))  # Ожидаемый вывод: True
-print(isinstance(reviewer, Mentor))  # Ожидаемый вывод: True
-print(lecturer.courses_attached)  # Ожидаемый вывод: []
-print(reviewer.courses_attached)  # Ожидаемый вывод: []
+    print(cool_lecturer.grades) # Ожидаемый вывод: {'Python': [7]}
