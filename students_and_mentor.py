@@ -25,14 +25,11 @@ class Student:
         return round(sum(all_grades) / len(all_grades), 1)
 
     def __str__(self):
-        # Форматирование списков в строки через запятую
         courses_in_progress_str = ', '.join(self.courses_in_progress)
         finished_courses_str = ', '.join(self.finished_courses)
-        avg_grade = self._get_average_grade()
-
         return (f"Имя: {self.name}\n"
                 f"Фамилия: {self.surname}\n"
-                f"Средняя оценка за домашние задания: {avg_grade}\n"
+                f"Средняя оценка за домашние задания: {self._get_average_grade()}\n"
                 f"Курсы в процессе изучения: {courses_in_progress_str}\n"
                 f"Завершенные курсы: {finished_courses_str}")
 
@@ -102,46 +99,103 @@ class Reviewer(Mentor):
         return f"Имя: {self.name}\nФамилия: {self.surname}"
 
 
-# =========================================
-# Блок проверки работоспособности Задания №3
-# =========================================
+# =========================================================
+# Аналитические функции (Задание 4)
+# =========================================================
+
+def calc_students_avg_grade(students_list, course):
+    """Считает среднюю оценку за ДЗ по всем студентам в рамках курса."""
+    total_sum = 0
+    total_count = 0
+    for student in students_list:
+        if course in student.grades:
+            total_sum += sum(student.grades[course])
+            total_count += len(student.grades[course])
+    if total_count == 0:
+        return 0
+    return round(total_sum / total_count, 1)
+
+
+def calc_lecturers_avg_grade(lecturers_list, course):
+    """Считает среднюю оценку за лекции всех лекторов в рамках курса."""
+    total_sum = 0
+    total_count = 0
+    for lecturer in lecturers_list:
+        if course in lecturer.grades:
+            total_sum += sum(lecturer.grades[course])
+            total_count += len(lecturer.grades[course])
+    if total_count == 0:
+        return 0
+    return round(total_sum / total_count, 1)
+
+
+# =========================================================
+# ПОЛЕВЫЕ ИСПЫТАНИЯ
+# =========================================================
 if __name__ == '__main__':
-    # Создание студентов
+    # 1. Создаем по 2 экземпляра каждого класса
     student_1 = Student('Ruoy', 'Eman', 'М')
     student_1.courses_in_progress += ['Python', 'Git']
     student_1.finished_courses += ['Введение в программирование']
 
     student_2 = Student('Ольга', 'Алёхина', 'Ж')
-    student_2.courses_in_progress += ['Python']
+    student_2.courses_in_progress += ['Python', 'Java']
+    student_2.finished_courses += ['Основы логики']
 
-    # Создание лекторов и экспертов
     lecturer_1 = Lecturer('Some', 'Buddy')
     lecturer_1.courses_attached += ['Python', 'Git']
 
     lecturer_2 = Lecturer('Иван', 'Иванов')
-    lecturer_2.courses_attached += ['Python']
+    lecturer_2.courses_attached += ['Python', 'Java']
 
     reviewer_1 = Reviewer('Пётр', 'Петров')
     reviewer_1.courses_attached += ['Python', 'Git']
 
-    # Выставление оценок
+    reviewer_2 = Reviewer('Анна', 'Смирнова')
+    reviewer_2.courses_attached += ['Python', 'Java']
+
+    # 2. Вызываем все методы
+    # Эксперты ставят оценки студентам
     reviewer_1.rate_hw(student_1, 'Python', 10)
     reviewer_1.rate_hw(student_1, 'Git', 9)
     reviewer_1.rate_hw(student_2, 'Python', 8)
 
+    reviewer_2.rate_hw(student_2, 'Java', 10)
+    reviewer_2.rate_hw(student_2, 'Python', 9)
+
+    # Студенты ставят оценки лекторам
     student_1.rate_lecture(lecturer_1, 'Python', 10)
     student_1.rate_lecture(lecturer_1, 'Git', 10)
-    student_2.rate_lecture(lecturer_2, 'Python', 7)
 
-    # Проверка работы __str__
+    student_2.rate_lecture(lecturer_2, 'Python', 8)
+    student_2.rate_lecture(lecturer_2, 'Java', 7)
+    student_2.rate_lecture(lecturer_1, 'Python', 9)
+
+    # Тестируем перегруженный __str__
+    print("--- РЕВЬЮЕРЫ ---")
     print(reviewer_1)
-    print("---")
+    print()
+    print(reviewer_2)
+    print("\n--- ЛЕКТОРЫ ---")
     print(lecturer_1)
-    print("---")
+    print()
+    print(lecturer_2)
+    print("\n--- СТУДЕНТЫ ---")
     print(student_1)
-    print("---")
+    print()
+    print(student_2)
 
-    # Проверка операторов сравнения
-    print(f"Сравнение лекторов (lecturer_1 > lecturer_2): {lecturer_1 > lecturer_2}")  # Ожидается True (10.0 > 7.0)
-    print(f"Сравнение студентов (student_1 < student_2): {student_1 < student_2}")  # Ожидается False (9.5 < 8.0)
-    print(f"Равенство студентов (student_1 == student_2): {student_1 == student_2}")  # Ожидается False
+    # Тестируем магические методы сравнения
+    print("\n--- СРАВНЕНИЕ ---")
+    print(f"Студент 1 круче Студента 2? {student_1 > student_2}")
+    print(f"Лектор 1 хуже Лектора 2? {lecturer_1 < lecturer_2}")
+
+    # 3. Тестируем глобальные функции
+    print("\n--- ГЛОБАЛЬНАЯ АНАЛИТИКА ---")
+
+    # Переименовываем переменные, чтобы не затенять аргументы функций
+    all_students = [student_1, student_2]
+    all_lecturers = [lecturer_1, lecturer_2]
+
+    print(f"Средняя оценка студентов по курсу 'Python': {calc_students_avg_grade(all_students, 'Python')}")
+    print(f"Средняя оценка лекторов по курсу 'Python': {calc_lecturers_avg_grade(all_lecturers, 'Python')}")
